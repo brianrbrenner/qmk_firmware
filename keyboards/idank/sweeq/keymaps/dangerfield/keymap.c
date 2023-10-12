@@ -15,7 +15,7 @@ enum custom_keycodes {
     LAYER2,
     LAYER3,
     ARROW_OP,
-    PTR
+    PTR,
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -33,12 +33,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             SEND_STRING("->");
         }
         break;
-
     }
     return true;
 };
 
+
+bool set_scrolling = false;
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (set_scrolling) {
+        mouse_report.h = mouse_report.x;
+        mouse_report.v = mouse_report.y;
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+    }
+    return mouse_report;
+}
+
 layer_state_t layer_state_set_user(layer_state_t state) {
+    if (get_highest_layer(state) == _LAYER2) {
+        set_scrolling = true;
+    } else {
+        set_scrolling = false;
+    }
+
    return update_tri_layer_state(state, _LAYER1, _LAYER2, _LAYER3);
 }
 
@@ -54,7 +72,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_Z, KC_X, KC_C, KC_D, KC_V,      KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH,
                     KC_TAB, LT(MO(1),KC_SPC),         KC_BSPC, MO(2)),
 
-[_LAYER1] = LAYOUT(KC_ESC, KC_COLN, KC_SCLN, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+[_LAYER1] = LAYOUT(KC_ESC, KC_COLN, KC_SCLN, KC_BTN1, KC_BTN2,      KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
                    KC_CIRC, KC_TRNS, KC_BSLS, ARROW_OP, PTR,     KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, KC_DLR,
                    KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,     KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
                                         KC_TRNS, KC_TRNS,               KC_ENT, KC_TRNS),
@@ -62,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_LAYER2] = LAYOUT(KC_1, KC_2, KC_3, KC_4, KC_5,                  KC_6, KC_7, KC_8, KC_9, KC_0,
                    KC_DLR, KC_PLUS, KC_LPRN, KC_RPRN, KC_AT,      KC_PIPE, KC_MINS, KC_EQL, KC_UNDS, KC_ASTR,
                    KC_EXLM, KC_HASH, KC_LCBR, KC_RCBR, KC_GRV,    KC_AMPR, KC_LBRC, KC_RBRC, KC_PERC, KC_CIRC,
-                                        KC_BTN1, KC_BTN2,         KC_BTN3, KC_TRNS),
+                                        KC_TRNS, KC_TRNS,         KC_TRNS, KC_TRNS),
 [_LAYER3] = LAYOUT(KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
                    KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
                    KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
